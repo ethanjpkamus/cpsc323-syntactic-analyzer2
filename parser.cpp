@@ -33,9 +33,9 @@ enum cols {
 	id = 0,
 	add,
 	mul,
-	op,
-	cp,
-	dol,
+	op, //open parenthesis
+	cp, //close parenthesis
+	dol, //dollar symbol
 	E,
 	T,
 	F
@@ -71,21 +71,19 @@ void parser(vector<sig_item> v)
 	vector<string> stack;
 	int i = 0;
 	int qm = 0;
+	int input_index = 0; //increment this based on shift/reduce actions
 
 	//====================================================================
-	//place $ at the end of the input string
 	string input = create_input_string(v);
 	
-	//push state 0 on the stack
 	stack.push_back("$");
-	stack.push_back(v[0].lexeme);
+	stack.push_back("0");
 
-	// cout << input << endl;
 	TYPE result;
 	do {
 		if(tos_is_num(stack.back())){ //number always on TOS
 			qm = stoi(stack.back());
-			i = 	
+			i = //token from input string	
 		} else {
 			cout << "error" << endl;
 			break;
