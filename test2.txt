@@ -1,0 +1,17 @@
+! this is comment for this sample test code for arithmetic expressions!
+
+!valid input!
+a+b
+a + b
+(a + b) + c
+(c*d)
+(e * f)
+(x+y)*z
+(h*i)+j
+
+!invalid input!
+(a + + b)
+(+ a )
+(a * n+ + b)
+(a * + a)
+(a + * a)
