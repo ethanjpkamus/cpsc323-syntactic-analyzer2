@@ -6,7 +6,6 @@ a + b
 (a + b) + c
 (c*d)
 (e * f)
-(x+y)*z
 (h*i)+j
 
 !invalid input!

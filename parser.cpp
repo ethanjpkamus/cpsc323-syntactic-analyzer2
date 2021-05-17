@@ -65,7 +65,7 @@ string create_input_string(vector<sig_item>);
 int find_i(char);
 int find_pop(int);
 string find_lhs(int);
-COLS stoT(string);
+COLS stoC(string);
 
 void parser(vector<sig_item> v)
 {
@@ -88,7 +88,9 @@ void parser(vector<sig_item> v)
 
 	//repeat
 	do {
+		// cout << "do ";
 		if(tos_is_num(stack.back())){ //number always on TOS
+			// cout << "tos_if ";
 			qm = stoi(stack.back()); // let qm be the current state (tos)
 			i = find_i(input[input_index]); // and i be the token.
 			elem x; //Find x = Table[Qm,i]
@@ -96,10 +98,12 @@ void parser(vector<sig_item> v)
 			x.num = table[qm][i].num; 
 			result = x.thing;
 
+			// cout << "begin_switch ";
 			switch(result) //case x of
 			{ 
 				case S:
 				{
+					// cout<<"S ";
 					stack.push_back(string(1,input[input_index])); //push back token
 					input_index++;
 					stack.push_back(to_string(x.num)); //push back state
@@ -107,18 +111,19 @@ void parser(vector<sig_item> v)
 				}
 				case R:
 				{
+					// cout << "R ";
 					//Reduce by production #n by popping 2x # of RHS symbols
 					int pop = 2 * find_pop(x.num);
 
 					for (int i = 0; i < pop; ++i) 
 					{ stack.pop_back(); }
-
 					int qj = stoi(stack.back()); //let Qj be the TOS state
 					 
 					string l = find_lhs(x.num); //push back lhs on to stack,
+					// cout << l << endl;
 					stack.push_back(l);
 					
-					string qk = to_string(table[qj][stoi(l)].num); // push qk = table[qj,l] on to the stack
+					string qk = to_string(table[qj][stoC(l)].num); // push qk = table[qj,l] on to the stack
 					stack.push_back(qk);
 					break;
 				}
@@ -209,7 +214,7 @@ string find_lhs(int r)
 	}
 }
 
-COLS stoT(string s)
+COLS stoC(string s)
 {
 	// switch(s) 
 	// {
