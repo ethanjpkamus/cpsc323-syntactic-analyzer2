@@ -80,6 +80,7 @@ void parser(vector<sig_item> v)
 	//====================================================================
 	string input = create_input_string(v);
 
+//first two 
 	stack.push_back("$");
 	stack.push_back("0");
 
