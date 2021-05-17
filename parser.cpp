@@ -12,6 +12,7 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::setw;
+using std::to_string;
 
 /*
  * Arithmetic Production Rules
@@ -29,7 +30,7 @@ using std::setw;
  * F -> id
  */
 
-enum cols {
+typedef enum {
 	id = 0,
 	add,
 	mul,
@@ -39,10 +40,10 @@ enum cols {
 	E,
 	T,
 	F
-};
+} COLS;
 
 // 0 indicates empty
-elem table[][9] = {
+elem table[12][9] = {
 	//   | id       | +        | *        | (        | )         | $        | E         | T         | F     
 	/*0*/{elem(S,5), elem(),    elem(),    elem(S,4), elem(),     elem(),    elem(ST,1), elem(ST,2), elem(ST,3) },
 	/*1*/{elem(),    elem(S,6), elem(),    elem(),    elem(),     elem(A,0), elem(),     elem(),     elem()     },
@@ -61,9 +62,10 @@ elem table[][9] = {
 void parser(vector<sig_item>);
 bool tos_is_num(string);
 string create_input_string(vector<sig_item>);
-int find_i(string);
+int find_i(char);
 int find_pop(int);
 string find_lhs(int);
+COLS stoT(string);
 
 void parser(vector<sig_item> v)
 {
@@ -78,50 +80,70 @@ void parser(vector<sig_item> v)
 
 	//====================================================================
 	string input = create_input_string(v);
-	
-	stack.push_back("$");
-	stack.push_back("0");
 
+	stack.push_back("$"); // Place $ at the end of the input string	
+	stack.push_back("0"); // Push state 0 on to the stack
 	TYPE result;
+	bool err = false;
+
+	//repeat
 	do {
 		if(tos_is_num(stack.back())){ //number always on TOS
-			qm = stoi(stack.back());
-			i = find_i(input[input_index]);//token from input string
-			elem x = table[qm,i];
-			TYPE t = x.thing;
+			qm = stoi(stack.back()); // let qm be the current state (tos)
+			i = find_i(input[input_index]); // and i be the token.
+			elem x; //Find x = Table[Qm,i]
+			x.thing = table[qm][i].thing;
+			x.num = table[qm][i].num; 
+			result = x.thing;
 
-			switch(t){
+			switch(result) //case x of
+			{ 
 				case S:
-					stack.push_back(input[input_index]); //push back token
+				{
+					stack.push_back(string(1,input[input_index])); //push back token
 					input_index++;
 					stack.push_back(to_string(x.num)); //push back state
 					break;
+				}
 				case R:
-					int pop = find_pop(x.num);
+				{
+					//Reduce by production #n by popping 2x # of RHS symbols
+					int pop = 2 * find_pop(x.num);
 
-					for (int i = 0; i < pop; ++i) //pop based on rhs
+					for (int i = 0; i < pop; ++i) 
 					{ stack.pop_back(); }
 
-					//push back lhs, 
-					string s = find_lhs(x.num);
-					stack.push_back(s);
-					//then state in GOTO part
+					int qj = stoi(stack.back()); //let Qj be the TOS state
+					 
+					string l = find_lhs(x.num); //push back lhs on to stack,
+					stack.push_back(l);
 					
+					string qk = to_string(table[qj][stoi(l)].num); // push qk = table[qj,l] on to the stack
+					stack.push_back(qk);
 					break;
-				case ST: //program will never reach this?
-					break;
+				}
+				// case ST: //program will never reach this?
+				// 	break;
 				case A:
+				{
+					cout << "parsing is complete" << endl;
 					break;
+				}
 				case EMP:
+				{
+					cout << "error" << endl;
+					err = true;
 					break;
+				}
 				default: //program will never reach this
-					break;
+					cout << "default" << endl;
 			}
 		} else {
-			cout << "error" << endl;
+			cout << "number not at TOS" << endl;
+			err = true;
 			break;
 		}
-	} while(result != A);
+	} while(!err && result != A && result != EMP); //check this
 	//====================================================================
 }
 
@@ -184,5 +206,34 @@ string find_lhs(int r)
 		return "F";
 	} else {
 		return "";
+	}
+}
+
+COLS stoT(string s)
+{
+	// switch(s) 
+	// {
+	// 	case "E":
+	// 		return E;
+	// 		break;
+	// 	case "T":
+	// 		return T;
+	// 		break;
+	// 	case "F":
+	// 		return F;
+	// 		break;
+	// 	default:
+	// 		return EMP;
+	// 		break;
+	// }
+
+	if(s == "E") {
+		return E;
+	} else if (s == "T") {
+		return T;
+	} else if (s == "F") {
+		return F;
+	} else {
+		return E;
 	}
 }
