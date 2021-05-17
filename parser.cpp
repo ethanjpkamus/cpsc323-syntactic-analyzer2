@@ -12,6 +12,8 @@ using std::string;
 using std::cout;
 using std::endl;
 using std::setw;
+using std::left;
+using std::right;
 using std::to_string;
 
 /*
@@ -66,6 +68,9 @@ int find_i(char);
 int find_pop(int);
 string find_lhs(int);
 COLS stoC(string);
+void store_stack(output&, vector<string>&);
+void store_input_string(output&, string, int);
+string get_rule(int);
 
 void parser(vector<sig_item> v)
 {
@@ -74,11 +79,12 @@ void parser(vector<sig_item> v)
 	{ return; }
 
 	vector<string> stack;
+	vector<output> printable;
 	int i = 0;
 	int qm = 0;
 	int input_index = 0; //increment this based on shift/reduce actions
 
-	//====================================================================
+	// begin bottom-up parsing
 	string input = create_input_string(v);
 
 	stack.push_back("$"); // Place $ at the end of the input string	
@@ -86,11 +92,15 @@ void parser(vector<sig_item> v)
 	TYPE result;
 	bool err = false;
 
-	//repeat
+	cout << "\ninput string: " << input << endl;
+	cout << setw(15) << left << "stack" 
+		 << setw(15) << left << "input" 
+		 << setw(15) << left << "table entry" 
+		 << setw(15) << left << "action" << endl;
 	do {
-		// cout << "do ";
+		output o;
+		store_stack(o,stack);
 		if(tos_is_num(stack.back())){ //number always on TOS
-			// cout << "tos_if ";
 			qm = stoi(stack.back()); // let qm be the current state (tos)
 			i = find_i(input[input_index]); // and i be the token.
 			elem x; //Find x = Table[Qm,i]
@@ -98,20 +108,22 @@ void parser(vector<sig_item> v)
 			x.num = table[qm][i].num; 
 			result = x.thing;
 
-			// cout << "begin_switch ";
+			store_input_string(o, input, input_index);
 			switch(result) //case x of
 			{ 
 				case S:
 				{
-					// cout<<"S ";
+					o.ao += ("Push(" + string(1,input[input_index]) + ");");
 					stack.push_back(string(1,input[input_index])); //push back token
 					input_index++;
 					stack.push_back(to_string(x.num)); //push back state
+					o.to += ("S" + to_string(x.num));
+					o.ao += ("Push(" + to_string(x.num) + ")");
+
 					break;
 				}
 				case R:
 				{
-					// cout << "R ";
 					//Reduce by production #n by popping 2x # of RHS symbols
 					int pop = 2 * find_pop(x.num);
 
@@ -125,18 +137,21 @@ void parser(vector<sig_item> v)
 					
 					string qk = to_string(table[qj][stoC(l)].num); // push qk = table[qj,l] on to the stack
 					stack.push_back(qk);
+					o.to += ("R" + to_string(x.num));
+					o.ao += (get_rule(x.num) + "Table[" + to_string(qj) + "," + l + "] = " + qk);
 					break;
 				}
 				// case ST: //program will never reach this?
 				// 	break;
 				case A:
 				{
-					cout << "parsing is complete" << endl;
+					// cout << "parsing is complete" << endl;
+					o.to += "ACCT";
 					break;
 				}
 				case EMP:
 				{
-					cout << "error" << endl;
+					// cout << "error parsing, not valid input" << endl << endl;
 					err = true;
 					break;
 				}
@@ -148,9 +163,19 @@ void parser(vector<sig_item> v)
 			err = true;
 			break;
 		}
-	} while(!err && result != A && result != EMP); //check this
-	//====================================================================
-}
+		
+		printable.push_back(o);
+	} while(!err && result != A && result != EMP); 
+	//print out everything from printable
+	int n = printable.size();
+	for (int i = 0; i < n; ++i)
+	{
+		cout << setw(15) << left << printable[i].so << setw(15) << left << printable[i].io << setw(15) << left << printable[i].to << setw(15) << left << printable[i].ao << endl;
+	}
+	if(err){
+		cout << "error parsing, not valid input" << endl << endl;
+	}
+} // end of parser
 
 bool tos_is_num(string s)
 {
@@ -216,22 +241,6 @@ string find_lhs(int r)
 
 COLS stoC(string s)
 {
-	// switch(s) 
-	// {
-	// 	case "E":
-	// 		return E;
-	// 		break;
-	// 	case "T":
-	// 		return T;
-	// 		break;
-	// 	case "F":
-	// 		return F;
-	// 		break;
-	// 	default:
-	// 		return EMP;
-	// 		break;
-	// }
-
 	if(s == "E") {
 		return E;
 	} else if (s == "T") {
@@ -240,5 +249,44 @@ COLS stoC(string s)
 		return F;
 	} else {
 		return E;
+	}
+}
+
+void store_stack(output &o, vector<string> &stack)
+{
+	int n = stack.size();
+	for(int i = 0; i < n ; ++i)
+	{ 
+		o.so += stack[i]; 
+	}
+}
+
+void store_input_string(output &o, string s, int index)
+{
+	int n = s.size();
+	for(int i = index; i < n; ++i)
+	{
+		o.io += s[i];
+	}
+}
+
+string get_rule(int i)
+{
+	switch(i)
+	{
+		case 1:
+			return "E -> E + T";
+		case 2:
+			return "E -> T";
+		case 3:
+			return "E -> T * F";
+		case 4:
+			return "T -> F";
+		case 5:
+			return "F -> (E)";
+		case 6:
+			return "F -> id";
+		default:
+			return "";
 	}
 }

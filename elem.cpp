@@ -13,3 +13,11 @@ struct elem
 	TYPE thing;
 	int num;
 };
+
+struct output
+{
+	string so = ""; //stack output
+	string io = ""; //input output
+	string to = ""; //table entry output
+	string ao = ""; //action output
+};
