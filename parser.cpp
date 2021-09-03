@@ -15,9 +15,9 @@ using std::setw;
 
 /*
  * Arithmetic Production Rules
- * <Expression> -> <Expression> + <Term> | <Term> 
+ * <Expression> -> <Expression> + <Term> | <Term>
  * <Term> -> <Term> * <Factor> | <Factor>
- * <Factor> -> ( <Expression> ) | id 
+ * <Factor> -> ( <Expression> ) | id
  *
  * or
  *
@@ -41,9 +41,10 @@ enum cols {
 	F
 };
 
+// table
 // 0 indicates empty
 elem table[][9] = {
-	//   | id       | +        | *        | (        | )         | $        | E         | T         | F     
+	//   | id       | +        | *        | (        | )         | $        | E         | T         | F
 	/*0*/{elem(S,5), elem(),    elem(),    elem(S,4), elem(),     elem(),    elem(ST,1), elem(ST,2), elem(ST,3) },
 	/*1*/{elem(),    elem(S,6), elem(),    elem(),    elem(),     elem(A,0), elem(),     elem(),     elem()     },
 	/*2*/{elem(),    elem(R,2), elem(S,7), elem(),    elem(R,2),  elem(R,2), elem(),     elem(),     elem()     },
@@ -68,7 +69,7 @@ string find_lhs(int);
 void parser(vector<sig_item> v)
 {
 	//check for comments
-	if(v.size() == 0) 
+	if(v.size() == 0)
 	{ return; }
 
 	vector<string> stack;
@@ -78,7 +79,8 @@ void parser(vector<sig_item> v)
 
 	//====================================================================
 	string input = create_input_string(v);
-	
+
+//first two 
 	stack.push_back("$");
 	stack.push_back("0");
 
@@ -102,11 +104,11 @@ void parser(vector<sig_item> v)
 					for (int i = 0; i < pop; ++i) //pop based on rhs
 					{ stack.pop_back(); }
 
-					//push back lhs, 
+					//push back lhs,
 					string s = find_lhs(x.num);
 					stack.push_back(s);
 					//then state in GOTO part
-					
+
 					break;
 				case ST: //program will never reach this?
 					break;
